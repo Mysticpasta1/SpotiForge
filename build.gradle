@@ -97,12 +97,20 @@ repositories {
     //     dir 'libs'
     // }
     maven { url "https://gitlab.com/api/v4/projects/38224197/packages/maven" }
+    maven {
+        url "https://cursemaven.com"
+        content {
+            includeGroup "curse.maven"
+        }
+    }
 }
 
 jarJar.enable()
 
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+
+    compileOnly(fg.deobf("curse.maven:kotlin-for-forge-351264:5402061"))
 
     jarJar(group: 'se.michaelthelin.spotify', name: 'spotify-web-api-java', version: '[7.2.0, 7.3.0)') {
         jarJar.pin(it, '7.2.1')
@@ -125,11 +133,6 @@ dependencies {
     jarJar(group: 'org.apache.httpcomponents.client5', name: 'httpclient5', version: '[5.1.3, 5.2.0)')
     jarJar(group: 'org.apache.httpcomponents.core5', name: 'httpcore5-h2', version: '[5.1.3, 5.2.0)')
     jarJar(group: 'org.apache.httpcomponents.core5', name: 'httpcore5', version: '[5.1.3, 5.2.0)')
-
-    jarJar(group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-common', version: '[1.7.10, 1.8.0)')
-    jarJar(group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: '[1.7.10, 1.8.0)')
-    jarJar(group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk7', version: '[1.7.10, 1.8.0)')
-    jarJar(group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib', version: '[1.7.10, 1.8.0)')
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.
@@ -138,29 +141,30 @@ dependencies {
 // See https://docs.gradle.org/current/dsl/org.gradle.language.jvm.tasks.ProcessResources.html
 tasks.named('processResources', ProcessResources).configure {
     var replaceProperties = [
-            minecraft_version: minecraft_version, minecraft_version_range: minecraft_version_range,
-            forge_version: forge_version, forge_version_range: forge_version_range,
+            minecraft_version   : minecraft_version, minecraft_version_range: minecraft_version_range,
+            forge_version       : forge_version, forge_version_range: forge_version_range,
             loader_version_range: loader_version_range,
-            mod_id: mod_id, mod_name: mod_name, mod_license: mod_license, mod_version: mod_version,
-            mod_authors: mod_authors, mod_description: mod_description,
+            mod_id              : mod_id, mod_name: mod_name, mod_license: mod_license, mod_version: mod_version,
+            mod_authors         : mod_authors, mod_description: mod_description,
     ]
 
     inputs.properties replaceProperties
 
     filesMatching(['META-INF/mods.toml', 'pack.mcmeta']) {
         expand replaceProperties + [project: project]
-    }}
+    }
+}
 
 // Example for how to get properties into the manifest for reading at runtime.
 tasks.named('jar', Jar).configure {
     manifest {
         attributes([
-                "Specification-Title": mod_id,
-                "Specification-Vendor": mod_authors,
-                "Specification-Version": "1", // We are version 1 of ourselves
-                "Implementation-Title": project.name,
-                "Implementation-Version": project.jar.archiveVersion,
-                "Implementation-Vendor": mod_authors,
+                "Specification-Title"     : mod_id,
+                "Specification-Vendor"    : mod_authors,
+                "Specification-Version"   : "1", // We are version 1 of ourselves
+                "Implementation-Title"    : project.name,
+                "Implementation-Version"  : project.jar.archiveVersion,
+                "Implementation-Vendor"   : mod_authors,
                 "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
         ])
     }
